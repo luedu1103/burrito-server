@@ -44,10 +44,16 @@ fn handle_options_request() -> Status {
     Status::NoContent
 }
 
+#[get("/loaderio-d0a8891a0d5f032a78809dc8605c4530")]
+fn testing() -> String{
+    let string = "loaderio-d0a8891a0d5f032a78809dc8605c4530".to_string();
+    string
+}
+
 #[shuttle_runtime::main]
 async fn main() -> shuttle_rocket::ShuttleRocket {
     let rocket = rocket::build()
-        .mount("/", routes![index, give_position, handle_options_request, get_position])
+        .mount("/", routes![index, give_position, handle_options_request, get_position, testing])
         .manage(PositionState::default());
 
     Ok(rocket.into())
