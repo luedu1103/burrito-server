@@ -1,7 +1,9 @@
+use rocket::fs::{FileServer, relative};
 use rocket::serde::json::{json, Value};
 use rocket::http::Status;
 use rocket::serde::{json::Json, Deserialize, Serialize};
 use rocket::State;
+use std::collections::HashMap;
 use std::sync::Mutex;
 use rocket::{Request, Response};
 use rocket::http::Header;
@@ -9,9 +11,19 @@ use rocket::fairing::{Fairing, Info, Kind};
 
 #[macro_use] extern crate rocket;
 
+use rocket_dyn_templates::Template;
+
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
+}
+
+#[get("/mainpage")]
+fn longlaoshi_main_page() -> Template {
+    // Status::NoContent
+    let mut context = HashMap::new();
+    context.insert("hi","These are the static files c:");
+    Template::render("index", &context)
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -81,8 +93,10 @@ impl Fairing for CORS {
 #[shuttle_runtime::main]
 async fn main() -> shuttle_rocket::ShuttleRocket {
     let rocket = rocket::build()
-        .mount("/", routes![index, give_position, handle_options_request, get_position, testing])
+        .mount("/", routes![index, give_position, handle_options_request, get_position, testing, longlaoshi_main_page])
         .attach(CORS)
+        .mount("/static", FileServer::from(relative!("static")))
+        .attach(Template::fairing())
         .manage(PositionState::default());
 
     Ok(rocket.into())
