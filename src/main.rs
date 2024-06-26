@@ -1,3 +1,4 @@
+use rocket::serde::json::{json, Value};
 use rocket::http::Status;
 use rocket::serde::{json::Json, Deserialize, Serialize};
 use rocket::State;
@@ -23,12 +24,16 @@ struct PositionState {
 }
 
 #[get("/get-position")]
-fn get_position(state: &State<PositionState>) -> String {
+fn get_position(state: &State<PositionState>) -> Result<Value, Status> {
     let message = state.message.lock().unwrap();
     if let Some(msg) = &*message {
-        format!("https://www.google.com/maps?q={},{}", msg.latitud, msg.longitud)
+        Ok(json!({
+            "latitud": msg.latitud,
+            "longitud": msg.longitud
+        }))
     } else {
-        "No position data available".to_string()
+        println!("No position data available");
+        Err(Status::InternalServerError)
     }
 }
 
