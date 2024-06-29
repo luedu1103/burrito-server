@@ -13,7 +13,7 @@ const map = L.map('map', {
     zoomControl: true,  // Enable zoom control buttons
     maxBounds: bounds,  // Set the boundaries
     maxBoundsViscosity: 1.0,  // Strictly limit the view to the boundaries
-    minZoom: 5,  // Minimum zoom level allowed
+    minZoom: 16,  // Minimum zoom level allowed
     maxZoom: 30,  // Maximum zoom level allowed
     scrollWheelZoom: true, // Enable scroll wheel zoom
     doubleClickZoom: true, // Enable double click zoom
