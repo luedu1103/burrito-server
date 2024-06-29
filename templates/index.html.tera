@@ -43,58 +43,6 @@
         <div id="map"></div>
     </div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        const defaultLat = 40.730610;  // Coordenadas por defecto
-        const defaultLon = -73.935242;
-        const initialZoom = 20; // Nivel de zoom inicial
-
-        const map = L.map('map').setView([defaultLat, defaultLon], initialZoom);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        const customIcon = L.icon({
-            iconUrl: 'static/burro.png',
-            iconSize: [25, 30],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-            shadowSize: [41, 41]
-        });
-
-        const marker = L.marker([defaultLat, defaultLon], { icon: customIcon }).addTo(map)
-            .bindPopup(`Coordinates: ${defaultLat}, ${defaultLon}`)
-            .openPopup();
-
-        async function fetchPosition() {
-            try {
-                const response = await fetch('https://burrito-server.shuttleapp.rs/get-position');
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                const latitude = parseFloat(data.latitud);
-                const longitude = parseFloat(data.longitud);
-
-                if (latitude && longitude) {
-                    return { lat: latitude, lon: longitude };
-                } else {
-                    throw new Error('Invalid data');
-                }
-            } catch (error) {
-                console.error('Error fetching position:', error);
-                return { lat: defaultLat, lon: defaultLon };
-            }
-        }
-
-        async function updatePosition() {
-            const { lat, lon } = await fetchPosition();
-            marker.setLatLng([lat, lon])
-                .setPopupContent(`Coordinates: ${lat}, ${lon}`)
-                .openPopup();
-            map.setView([lat, lon], initialZoom, { animate: true, duration: 1 });
-        }
-
-        setInterval(updatePosition, 1000);
-    </script>
+    <script src="static\scripts\index.js"></script>
 </body>
 </html>
