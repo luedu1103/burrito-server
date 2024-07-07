@@ -74,8 +74,8 @@ async function fetchPosition(count = 1) {
         if (data.positions && data.positions.length > 0) {
             // Return all positions or the latest one
             const positions = data.positions.map(pos => ({
-                lat: parseFloat(pos.latitud),
-                lon: parseFloat(pos.longitud)
+                lat: pos.lt,
+                lon: pos.lg
             }));
             return positions;
         } else {
@@ -88,25 +88,26 @@ async function fetchPosition(count = 1) {
 }
 
 async function updatePosition() {
-    const positions = await fetchPosition(1); // Fetch the latest 10 positions
-    if (positions && positions.length > 0) {
-        const latestPosition = positions[positions.length - 1];
-        const lat = latestPosition.lat;
-        const lon = latestPosition.lon;
-        
-        markerActualPosition.setLatLng([lat, lon])
-            .setPopupContent(`Coordinates: ${lat}, ${lon}`)
-            .openPopup();
+    try {
+        const positions = await fetchPosition(1); // Obtener la última posición
 
-        // Center the map to the updated position without changing the zoom level
-        map.setView([lat, lon], map.getZoom(), { animate: true, duration: 1 });
+        if (positions && positions.length > 0) {
+            const latestPosition = positions[0]; // Obtener la última posición del array
 
-        // Optionally, add markers for all positions with different colors
-        positions.forEach((pos) => {
-            L.marker([pos.lat, pos.lon], { icon })
-                .addTo(map)
-                .bindPopup(`Coordinates: ${pos.lat}, ${pos.lon}`);
-        });
+            const lat = latestPosition.lat;
+            const lon = latestPosition.lon;
+
+            // Actualizar la posición del marcador y el contenido del popup
+            markerActualPosition.setIcon(customIcon)
+                .setLatLng([lat, lon])
+                .setPopupContent(`Coordinates: ${lat}, ${lon}`)
+                .openPopup();
+
+            // Centrar el mapa en la posición actual sin cambiar el nivel de zoom
+            map.setView([lat, lon], map.getZoom(), { animate: true, duration: 1 });
+        }
+    } catch (error) {
+        console.error('Error updating position:', error);
     }
 }
 
@@ -175,3 +176,31 @@ fetchVelocity();
 
 // Actualiza la velocidad cada cierto tiempo
 setInterval(fetchVelocity, 5000);
+
+// Fetch and add GeoJSON data to the map
+async function addGeoJSONLines() {
+    try {
+        const response = await fetch('static/img/ruta.json'); // Ajusta la ruta a tu archivo GeoJSON
+        if (!response.ok) throw new Error('Network response was not ok');
+        const geojsonData = await response.json();
+
+        // Define una función para estilizar cada feature
+        function style(feature) {
+            return {
+                color: '#3388ff', // Color de las líneas
+                weight: 3, // Grosor de las líneas
+                opacity: 0.7 // Opacidad de las líneas
+            };
+        }
+
+        // Agrega el GeoJSON al mapa con estilos personalizados
+        L.geoJSON(geojsonData, {
+            style: style
+        }).addTo(map);
+    } catch (error) {
+        console.error('Error fetching or parsing GeoJSON:', error);
+    }
+}
+
+// Llama a la función para agregar el GeoJSON al mapa
+addGeoJSONLines();
