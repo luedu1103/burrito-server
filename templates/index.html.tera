@@ -58,6 +58,9 @@
     </div>
     <div id="velocity-container">
         <p>Velocidad del Burrito: <span id="velocity">Calculando...</span> km/h</p>
+        <p>Humedad: <span id="humidity">Calculando...</span>%</p>
+        <p>Temperatura: <span id="temperature">Calculando...</span>°C</p>
+        <p>Estado: <span id="status">Calculando...</span></p>
     </div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="static\scripts\index.js"></script>

@@ -11,10 +11,10 @@ const map = L.map('map', {
     center: [defaultLat, defaultLon],
     zoom: initialZoom,
     zoomControl: true,  // Enable zoom control buttons
-    maxBounds: bounds,  // Set the boundaries
-    maxBoundsViscosity: 1.0,  // Strictly limit the view to the boundaries
-    minZoom: 16,  // Minimum zoom level allowed
-    maxZoom: 18,  // Maximum zoom level allowed
+    // maxBounds: bounds,  // Set the boundaries
+    // maxBoundsViscosity: 1.0,  // Strictly limit the view to the boundaries
+    // minZoom: 16,  // Minimum zoom level allowed
+    // maxZoom: 18,  // Maximum zoom level allowed
     scrollWheelZoom: true, // Enable scroll wheel zoom
     doubleClickZoom: true, // Enable double click zoom
     boxZoom: true, // Enable box zoom
@@ -75,7 +75,10 @@ async function fetchPosition(count = 1) {
             // Return all positions or the latest one
             const positions = data.positions.map(pos => ({
                 lat: pos.lt,
-                lon: pos.lg
+                lon: pos.lg,
+                humidity: pos.hum,
+                temperature: pos.tmp,
+                status: interpretStatus(pos.sts),
             }));
             return positions;
         } else {
@@ -83,7 +86,31 @@ async function fetchPosition(count = 1) {
         }
     } catch (error) {
         console.error('Error fetching position:', error);
-        return [{ lat: defaultLat, lon: defaultLon }];
+        return [{
+            lat: defaultLat,
+            lon: defaultLon,
+            humidity: 0,
+            temperature: 0,
+            status: 'Unknown',
+        }];
+    }
+}
+
+// Función para interpretar el estado basado en el código numérico
+function interpretStatus(statusCode) {
+    switch (statusCode) {
+        case 0:
+            return 'En ruta';
+        case 1:
+            return 'Fuera de servicio';
+        case 2:
+            return 'En descanso';
+        case 3:
+            return 'Accidente';
+        case 4:
+            return 'Error';
+        default:
+            return 'Desconocido';
     }
 }
 
@@ -100,8 +127,15 @@ async function updatePosition() {
             // Actualizar la posición del marcador y el contenido del popup
             markerActualPosition.setIcon(customIcon)
                 .setLatLng([lat, lon])
-                .setPopupContent(`Coordinates: ${lat}, ${lon}`)
+                .setPopupContent(`
+                    Coordinates: ${lat}, ${lon}<br>
+                `)
                 .openPopup();
+
+             // Actualizar los datos de velocidad, humedad, temperatura y estado
+             document.getElementById('humidity').textContent = latestPosition.humidity.toFixed(2);
+             document.getElementById('temperature').textContent = latestPosition.temperature.toFixed(2);
+             document.getElementById('status').textContent = latestPosition.status;
 
             // Centrar el mapa en la posición actual sin cambiar el nivel de zoom
             map.setView([lat, lon], map.getZoom(), { animate: true, duration: 1 });
