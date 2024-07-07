@@ -1,6 +1,6 @@
 const defaultLat = -12.057478;  // -12.057478, -77.083282
 const defaultLon = -77.083282;
-const initialZoom = 16; // Initial zoom level
+const initialZoom = 17; // Initial zoom level
 
 // Define the bounds of the allowed area
 const southWest = L.latLng(-12.064890, -77.090576); //-12.064890, -77.090576 
@@ -14,7 +14,7 @@ const map = L.map('map', {
     maxBounds: bounds,  // Set the boundaries
     maxBoundsViscosity: 1.0,  // Strictly limit the view to the boundaries
     minZoom: 16,  // Minimum zoom level allowed
-    maxZoom: 30,  // Maximum zoom level allowed
+    maxZoom: 18,  // Maximum zoom level allowed
     scrollWheelZoom: true, // Enable scroll wheel zoom
     doubleClickZoom: true, // Enable double click zoom
     boxZoom: true, // Enable box zoom
@@ -96,3 +96,42 @@ async function updatePosition() {
 
 // Update position periodically
 setInterval(updatePosition, 1000);
+
+// Fetch and add GeoJSON data to the map
+async function addGeoJSON() {
+    try {
+        const response = await fetch('static/img/UNMSM.json'); // Adjust the path to your GeoJSON file
+        if (!response.ok) throw new Error('Network response was not ok');
+        const geojsonData = await response.json();
+
+        // Define a style function to style each feature differently
+        function style(feature) {
+            return {
+                color: getColor(feature.properties.type), // Get color based on the feature type
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.7
+            };
+        }
+
+        // Define a function to get a color based on a feature property
+        function getColor(type) {
+            switch (type) {
+                case 'type1': return '#ff0000'; // Red for type1
+                case 'type2': return '#00ff00'; // Green for type2
+                case 'type3': return '#0000ff'; // Blue for type3
+                default: return '#ff7800'; // Default color
+            }
+        }
+
+        // Add GeoJSON data to the map with custom styles
+        L.geoJSON(geojsonData, {
+            style: style
+        }).addTo(map);
+    } catch (error) {
+        console.error('Error fetching GeoJSON data:', error);
+    }
+}
+
+// Call the function to add GeoJSON data
+addGeoJSON();

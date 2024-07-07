@@ -35,27 +35,35 @@ struct Message {
 
 #[derive(Default)]
 struct PositionState {
-    message: Mutex<Option<Message>>,
+    messages: Mutex<Vec<Message>>,
 }
 
-#[get("/get-position")]
-fn get_position(state: &State<PositionState>) -> Result<Value, Status> {
-    let message = state.message.lock().unwrap();
-    if let Some(msg) = &*message {
-        Ok(json!({
-            "latitud": msg.latitud,
-            "longitud": msg.longitud
-        }))
-    } else {
-        println!("No position data available");
-        Err(Status::InternalServerError)
+#[get("/get-position/<count>")]
+fn get_position(count: usize, state: &State<PositionState>) -> Result<Value, Status> {
+    let messages = state.messages.lock().unwrap();
+    if messages.is_empty() {
+        return Err(Status::InternalServerError);
     }
+    
+    let start = if messages.len() > count {
+        messages.len() - count
+    } else {
+        0
+    };
+
+    let recent_messages: Vec<Message> = messages[start..].to_vec();
+    Ok(json!({
+        "positions": recent_messages,
+    }))
 }
 
 #[post("/give-position", format = "json", data = "<message_json>")]
 fn give_position(message_json: Json<Message>, state: &State<PositionState>) -> Status {
-    let mut message = state.message.lock().unwrap();
-    *message = Some(message_json.into_inner());
+    let mut messages = state.messages.lock().unwrap();
+    messages.push(message_json.into_inner());
+    if messages.len() > 100 {
+        messages.remove(0); // Keep only the latest 100 positions
+    }
     Status::Ok
 }
 
