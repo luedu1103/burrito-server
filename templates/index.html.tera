@@ -35,12 +35,29 @@
             height: 100%;
             width: 100%;
         }
+        #velocity-container {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            position: absolute;
+            bottom: 10px; /* Posición en la parte inferior */
+            left: 10px; /* Alineado a la izquierda */
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        #velocity {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div id="navbar">Burrito Location</div>
     <div id="map-container">
         <div id="map"></div>
+    </div>
+    <div id="velocity-container">
+        <p>Velocidad del Burrito: <span id="velocity">Calculando...</span> km/h</p>
     </div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="static\scripts\index.js"></script>

@@ -88,11 +88,26 @@ async function fetchPosition(count = 1) {
 }
 
 async function updatePosition() {
-    const { lat, lon } = await fetchPosition(1);
-    // Update the main marker
-    markerActualPosition.setLatLng([lat, lon])
-        .setPopupContent(`Coordinates: ${lat}, ${lon}`)
-        .openPopup();
+    const positions = await fetchPosition(1); // Fetch the latest 10 positions
+    if (positions && positions.length > 0) {
+        const latestPosition = positions[positions.length - 1];
+        const lat = latestPosition.lat;
+        const lon = latestPosition.lon;
+        
+        markerActualPosition.setLatLng([lat, lon])
+            .setPopupContent(`Coordinates: ${lat}, ${lon}`)
+            .openPopup();
+
+        // Center the map to the updated position without changing the zoom level
+        map.setView([lat, lon], map.getZoom(), { animate: true, duration: 1 });
+
+        // Optionally, add markers for all positions with different colors
+        positions.forEach((pos) => {
+            L.marker([pos.lat, pos.lon], { icon })
+                .addTo(map)
+                .bindPopup(`Coordinates: ${pos.lat}, ${pos.lon}`);
+        });
+    }
 }
 
 // Update position periodically
@@ -136,3 +151,27 @@ async function addGeoJSON() {
 
 // Call the function to add GeoJSON data
 addGeoJSON();
+
+// 
+// VELOCITY
+// 
+
+async function fetchVelocity() {
+    try {
+        const response = await fetch('https://burrito-server.shuttleapp.rs/get-velocity');
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        const velocityElement = document.getElementById('velocity');
+        if (velocityElement) {
+            velocityElement.textContent = data.velocity.toFixed(2); // Mostrar la velocidad redondeada a dos decimales
+        }
+    } catch (error) {
+        console.error('Error fetching velocity:', error);
+    }
+}
+
+// Llama a fetchVelocity() para obtener y mostrar la velocidad inicialmente
+fetchVelocity();
+
+// Actualiza la velocidad cada cierto tiempo
+setInterval(fetchVelocity, 5000);

@@ -1,10 +1,8 @@
 use rocket::fs::{FileServer, relative};
-use rocket::serde::json::{json, Value};
-use rocket::http::Status;
-use rocket::serde::{json::Json, Deserialize, Serialize};
-use rocket::State;
+use rocket::serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Mutex;
+use std::time::SystemTime;
 use rocket::{Request, Response};
 use rocket::http::Header;
 use rocket::fairing::{Fairing, Info, Kind};
@@ -12,6 +10,9 @@ use rocket::fairing::{Fairing, Info, Kind};
 #[macro_use] extern crate rocket;
 
 use rocket_dyn_templates::Template;
+
+mod velocity;
+mod position;
 
 #[get("/")]
 fn index() -> &'static str {
@@ -27,49 +28,19 @@ fn longlaoshi_main_page() -> Template {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-struct Message {
-    latitud: String,
-    longitud: String,
-    // velocidad: String,
+pub struct Message {
+    lt: f64,
+    lg: f64,
+    tmp: f32,
+    hum: f32,
+    sts: i32,
+    #[serde(skip_deserializing)]
+    timestamp: Option<SystemTime>,
 }
 
 #[derive(Default)]
-struct PositionState {
+pub struct PositionState {
     messages: Mutex<Vec<Message>>,
-}
-
-#[get("/get-position/<count>")]
-fn get_position(count: usize, state: &State<PositionState>) -> Result<Value, Status> {
-    let messages = state.messages.lock().unwrap();
-    if messages.is_empty() {
-        return Err(Status::InternalServerError);
-    }
-    
-    let start = if messages.len() > count {
-        messages.len() - count
-    } else {
-        0
-    };
-
-    let recent_messages: Vec<Message> = messages[start..].to_vec();
-    Ok(json!({
-        "positions": recent_messages,
-    }))
-}
-
-#[post("/give-position", format = "json", data = "<message_json>")]
-fn give_position(message_json: Json<Message>, state: &State<PositionState>) -> Status {
-    let mut messages = state.messages.lock().unwrap();
-    messages.push(message_json.into_inner());
-    if messages.len() > 100 {
-        messages.remove(0); // Keep only the latest 100 positions
-    }
-    Status::Ok
-}
-
-#[options("/give-position")]
-fn handle_options_request() -> Status {
-    Status::NoContent
 }
 
 #[get("/loaderio-d0a8891a0d5f032a78809dc8605c4530")]
@@ -101,9 +72,11 @@ impl Fairing for CORS {
 #[shuttle_runtime::main]
 async fn main() -> shuttle_rocket::ShuttleRocket {
     let rocket = rocket::build()
-        .mount("/", routes![index, give_position, handle_options_request, get_position, testing, longlaoshi_main_page])
-        .attach(CORS)
+        .mount("/", routes![index, testing, longlaoshi_main_page])
+        .mount("/", position::routes())
+        .mount("/", velocity::routes())
         .mount("/static", FileServer::from(relative!("static")))
+        .attach(CORS)
         .attach(Template::fairing())
         .manage(PositionState::default());
 
