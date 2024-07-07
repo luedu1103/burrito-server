@@ -65,33 +65,34 @@ const markerActualPosition =  L.marker([defaultLat, defaultLon], { icon: customI
     .setPopupContent(`Coordinates: ${defaultLat}, ${defaultLon}`)
     .openPopup();
 
-async function fetchPosition() {
+async function fetchPosition(count = 1) {
     try {
-        const response = await fetch('https://burrito-server.shuttleapp.rs/get-position/1');
+        const response = await fetch(`https://burrito-server.shuttleapp.rs/get-position/${count}`);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        const latitude = parseFloat(data.latitud);
-        const longitude = parseFloat(data.longitud);
 
-        if (latitude && longitude) {
-            return { lat: latitude, lon: longitude };
+        if (data.positions && data.positions.length > 0) {
+            // Return all positions or the latest one
+            const positions = data.positions.map(pos => ({
+                lat: parseFloat(pos.latitud),
+                lon: parseFloat(pos.longitud)
+            }));
+            return positions;
         } else {
             throw new Error('Invalid data');
         }
     } catch (error) {
         console.error('Error fetching position:', error);
-        return { lat: defaultLat, lon: defaultLon };
+        return [{ lat: defaultLat, lon: defaultLon }];
     }
 }
 
 async function updatePosition() {
-    const { lat, lon } = await fetchPosition();
+    const { lat, lon } = await fetchPosition(1);
     // Update the main marker
     markerActualPosition.setLatLng([lat, lon])
         .setPopupContent(`Coordinates: ${lat}, ${lon}`)
         .openPopup();
-    // Center the map to the updated position without changing the zoom level
-    // map.setView([lat, lon], map.getZoom(), { animate: true, duration: 1 });
 }
 
 // Update position periodically
