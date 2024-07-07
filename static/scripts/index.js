@@ -67,7 +67,7 @@ const markerActualPosition =  L.marker([defaultLat, defaultLon], { icon: customI
 
 async function fetchPosition() {
     try {
-        const response = await fetch('https://burrito-server.shuttleapp.rs/get-position');
+        const response = await fetch('https://burrito-server.shuttleapp.rs/get-position/1');
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         const latitude = parseFloat(data.latitud);
