@@ -95,5 +95,5 @@ fn rocket() -> _ {
     .mount("/static", FileServer::from(relative!("static")))
     .attach(CORS)
     .attach(Template::fairing())
-    .manage(PositionState::default());
+    .manage(PositionState::default())
 }
