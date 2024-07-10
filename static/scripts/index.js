@@ -67,7 +67,8 @@ const markerActualPosition =  L.marker([defaultLat, defaultLon], { icon: customI
 
 async function fetchPosition(count = 1) {
     try {
-        const response = await fetch(`https://burrito-server.shuttleapp.rs/get-position/${count}`);
+        // const response = await fetch(`https://burrito-server.shuttleapp.rs/get-position/${count}`);
+        const response = await fetch(`http://143.198.141.62:6969/get-position/${count}`);
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
 
@@ -193,7 +194,8 @@ addGeoJSON();
 
 async function fetchVelocity() {
     try {
-        const response = await fetch('https://burrito-server.shuttleapp.rs/get-velocity');
+        // const response = await fetch('https://burrito-server.shuttleapp.rs/get-velocity');
+        const response = await fetch('http://143.198.141.62:6969/get-velocity');
         if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         const velocityElement = document.getElementById('velocity');
