@@ -81,19 +81,25 @@ async function fetchPosition(count = 1) {
                 temperature: pos.tmp,
                 status: interpretStatus(pos.sts),
             }));
-            return positions;
+            return {
+                positions: positions,
+                lastStopName: data.last_stop ? data.last_stop.name : 'Unknown'
+            };
         } else {
             throw new Error('Invalid data');
         }
     } catch (error) {
         console.error('Error fetching position:', error);
-        return [{
-            lat: defaultLat,
-            lon: defaultLon,
-            humidity: 0,
-            temperature: 0,
-            status: 'Unknown',
-        }];
+        return {
+            positions: [{
+                lat: defaultLat,
+                lon: defaultLon,
+                humidity: 0,
+                temperature: 0,
+                status: 'Unknown',
+            }],
+            lastStopName: 'Unknown'
+        };
     }
 }
 
@@ -117,7 +123,7 @@ function interpretStatus(statusCode) {
 
 async function updatePosition() {
     try {
-        const positions = await fetchPosition(1); // Obtener la última posición
+        const { positions, lastStopName } = await fetchPosition(1); // Obtener la última posición
 
         if (positions && positions.length > 0) {
             const latestPosition = positions[0]; // Obtener la última posición del array
@@ -137,6 +143,11 @@ async function updatePosition() {
              document.getElementById('humidity').textContent = latestPosition.humidity.toFixed(2);
              document.getElementById('temperature').textContent = latestPosition.temperature.toFixed(2);
              document.getElementById('status').textContent = latestPosition.status;
+            
+            const lastStopElement = document.getElementById('last-stop');
+            if (lastStopElement) {
+                lastStopElement.textContent = lastStopName || 'Unknown';
+            }
 
             // Centrar el mapa en la posición actual sin cambiar el nivel de zoom
             map.setView([lat, lon], map.getZoom(), { animate: true, duration: 1 });

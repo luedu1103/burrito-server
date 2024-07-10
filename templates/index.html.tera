@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Burrito Location</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,6 +25,15 @@
             font-size: 1.5rem;
             box-sizing: border-box;
         }
+        #status-container {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
         #map-container {
             flex: 1;
             width: 100%;
@@ -38,29 +48,38 @@
         #velocity-container {
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
-            position: absolute;
-            bottom: 10px; /* Posición en la parte inferior */
-            left: 10px; /* Alineado a la izquierda */
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
             padding: 10px;
-            border-radius: 5px;
+            box-sizing: border-box;
             z-index: 1000;
         }
-        #velocity {
-            font-size: 1.2rem;
-            font-weight: bold;
+        #velocity-container p, #status-container p {
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        #velocity-container i, #status-container i {
+            margin-right: 8px;
         }
     </style>
 </head>
 <body>
     <div id="navbar">Burrito Location</div>
+    <div id="status-container">
+        <p><span id="last-stop"> </span></p>
+    </div>
     <div id="map-container">
         <div id="map"></div>
     </div>
     <div id="velocity-container">
-        <p>Velocidad del Burrito: <span id="velocity">Calculando...</span> km/h</p>
-        <p>Humedad: <span id="humidity">Calculando...</span>%</p>
-        <p>Temperatura: <span id="temperature">Calculando...</span>°C</p>
-        <p>Estado: <span id="status">Calculando...</span></p>
+        <p><i class="fas fa-tachometer-alt"></i> <span id="velocity"> </span> km/h</p>
+        <p><i class="fas fa-tint"></i> <span id="humidity"> </span>%</p>
+        <p><i class="fas fa-thermometer-half"></i> <span id="temperature"> </span>°C</p>
+        <p><i class="fas fa-exclamation-circle"></i> <span id="status"> </span></p>
     </div>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="static\scripts\index.js"></script>
