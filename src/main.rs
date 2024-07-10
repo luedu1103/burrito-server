@@ -69,7 +69,7 @@ impl Fairing for CORS {
     }
 }
 
-#[cfg(feature = "shuttle")]
+// #[cfg(feature = "shuttle")]
 #[shuttle_runtime::main]
 async fn main() -> shuttle_rocket::ShuttleRocket {
     let rocket = rocket::build()
@@ -85,15 +85,15 @@ async fn main() -> shuttle_rocket::ShuttleRocket {
 }
 
 // Run without shuttle:
-#[cfg(not(feature = "shuttle"))]
-#[launch]
-fn rocket() -> _ {
-    rocket::build()
-    .mount("/", routes![index, testing, longlaoshi_main_page])
-    .mount("/", position::routes())
-    .mount("/", velocity::routes())
-    .mount("/static", FileServer::from(relative!("static")))
-    .attach(CORS)
-    .attach(Template::fairing())
-    .manage(PositionState::default())
-}
+// #[cfg(not(feature = "shuttle"))]
+// #[launch]
+// fn rocket() -> _ {
+//     rocket::build()
+//     .mount("/", routes![index, testing, longlaoshi_main_page])
+//     .mount("/", position::routes())
+//     .mount("/", velocity::routes())
+//     .mount("/static", FileServer::from(relative!("static")))
+//     .attach(CORS)
+//     .attach(Template::fairing())
+//     .manage(PositionState::default())
+// }
